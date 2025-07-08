@@ -9,7 +9,7 @@ on:
 
       TARGET_IMAGE:
         description: 'Target Image'
-        default: ''
+        required: true
         type: choice
         options:
           - 'boot'
@@ -26,30 +26,16 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Validate Secrets
-        env:
-          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} # telegram chat id
-          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} # telegram bot token
-          GH_TOKEN: ${{ secrets.GH_TOKEN }} # github token
+      - name: Setup Git identity
         run: |
-          ret=0
-          _error() {
-              echo "ERROR: $*"
-              let ret++
-          }
-
-          # Check Secrets
-          [ -z "$TG_CHAT_ID" ] && _error "Missing TG_CHAT_ID secret (Telegram Chat ID)"
-          [ -z "$TG_BOT_TOKEN" ] && _error "Missing TG_BOT_TOKEN secret (Telegram Bot Token)"
-          [ -z "$GH_TOKEN" ] && _error "Missing GH_TOKEN secret (GitHub PAT)"
-
-          [ $ret -gt 0 ] && exit $ret
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
 
       - name: Run script
         env:
-          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} # telegram chat id
-          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} # telegram bot token
-          GH_TOKEN: ${{ secrets.GH_TOKEN }} # github token
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           FIRMWARE_URL: ${{ inputs.FIRMWARE_URL }}
           TARGET_IMAGE: ${{ inputs.TARGET_IMAGE }}
         run: |
