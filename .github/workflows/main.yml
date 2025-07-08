@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  workflow_dispatch:
+    inputs:
+      FIRMWARE_URL:
+        description: 'Firmware URL'
+        required: true
+
+      TARGET_IMAGE:
+        description: 'Target Image'
+        default: ''
+        type: choice
+        options:
+          - 'boot'
+          - 'vendor_boot'
+          - 'vbmeta'
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Validate Secrets
+        env:
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} # telegram chat id
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} # telegram bot token
+          GH_TOKEN: ${{ secrets.GH_TOKEN }} # github token
+        run: |
+          ret=0
+          _error() {
+              echo "ERROR: $*"
+              let ret++
+          }
+
+          # Check Secrets
+          [ -z "$TG_CHAT_ID" ] && _error "Missing TG_CHAT_ID secret (Telegram Chat ID)"
+          [ -z "$TG_BOT_TOKEN" ] && _error "Missing TG_BOT_TOKEN secret (Telegram Bot Token)"
+          [ -z "$GH_TOKEN" ] && _error "Missing GH_TOKEN secret (GitHub PAT)"
+
+          [ $ret -gt 0 ] && exit $ret
+
+      - name: Run script
+        env:
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} # telegram chat id
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} # telegram bot token
+          GH_TOKEN: ${{ secrets.GH_TOKEN }} # github token
+          FIRMWARE_URL: ${{ inputs.FIRMWARE_URL }}
+          TARGET_IMAGE: ${{ inputs.TARGET_IMAGE }}
+        run: |
+          chmod +x *.sh
+          bash ci.sh
