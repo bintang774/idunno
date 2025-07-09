@@ -50,6 +50,6 @@ create_release() {
 # setup magiskboot
 setup_magiskboot() {
     mkdir -p ~/bin && export PATH="~/bin:$PATH"
-    curl -s "https://github.com/bintang774/magiskboot-releases/releases/download/magiskboot-X64/magiskboot" -o ~/bin/magiskboot
+    curl -s "https://raw.githubusercontent.com/TheWildJames/Get_My_Kernel_Format/refs/heads/main/magiskboot" -o ~/bin/magiskboot
     chmod 777 ~/bin/magiskboot
 }
