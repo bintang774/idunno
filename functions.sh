@@ -20,24 +20,40 @@ send_msg() {
         -d "text=$text"
 }
 
-# create_release <tag name> <release name> <file>
+# create_release <tag name> <release name> <file> [<notes-file>]
 create_release() {
     local tag_name="$1"
     local release_name="$2"
     local file="$3"
+    local notes_file="$4"
+    local args
 
     # check input
     [ -n "$tag_name" ] || error "Tag name must be set"
     [ -n "$release_name" ] || error "Release name must be set"
     [ -f "$file" ] || error "$file doesn't exist"
+    [ -f "$notes_file" ] && notes=1 || error "notes file doesn't exist"
+
+    # setup args
+    args=("$tag_name" "$file" --title "$release_name")
+    [ "$notes" == "1" ] && args+=(-F "$notes_file")
 
     # ensure GitHub token is set for gh
     export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN}}"
 
-    # create release with --clobber in case tag already exists
-    gh release create "$tag_name" \
-        "$file" \
-        --title "$release_name"
+    # oh yeahh
+    gh release create $args
 
     return $?
+}
+
+# magiskboot
+magiskboot() {
+    if ! [ -f "~/magiskboot" ]; then
+        local magiskboot_repo="https://api.github.com/repos/bintang774/magiskboot-releases/releases/latest"
+        local latest_magiskboot=$(curl -s "$magiskboot_repo" | grep "browser_download_url" | grep "magiskboot-x86_64" | cut -d '"' -f 4)
+        curl -s "$latest_magiskboot" -o ~/magiskboot
+        chmod 777 ~/magiskboot
+    fi
+    ~/magiskboot $@
 }

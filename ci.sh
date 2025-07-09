@@ -17,12 +17,32 @@ if [ $(find "$tempdir" -mindepth 1 -maxdepth 1 -type d | wc -l) -eq 1 ] &&
     rm -rf $SINGLE_DIR
 fi
 mv $tempdir/images/$TARGET_IMAGE.img .
+rm -rf $tempdir
+
+if [ "$TARGET_IMAGE" == "boot" ]; then
+    log "Extracting kernel string from boot.img"
+    # extract kernel version
+    mkdir -p kernel && cd kernel
+    cp $OLDPWD/boot.img .
+    magiskboot unpack boot.img || error "Failed to unpack boot.img"
+    k_str=$(strings kernel | grep -E -m1 'Linux version.*#' 2>/dev/null)
+    [ -z "$k_str" ] && error "Failed to extract kernel string"
+    cd $OLDPWD
+    rm -rf kernel
+fi
 
 log "Uploading $TARGET_IMAGE.img to GitHub Release"
 fw=$(echo "$FIRMWARE_URL" | awk -F'/' '{print $4}')
 tag_name="$TARGET_IMAGE-$codename-$fw"
 release_name="$TARGET_IMAGE $codename $fw"
-create_release "$tag_name" "$release_name" "$(pwd)/$TARGET_IMAGE.img"
+release_args=("$tag_name" "$release_name" "$(pwd)/$TARGET_IMAGE.img")
+
+if [ "$TARGET_IMAGE" == "boot" ]; then
+    sed -i "s|k_str|$k_str|g" $(pwd)/skibidi.md
+    release_args+=("$(pwd)/skibidi.md")
+fi
+
+create_release $release_args
 
 log "Sending info message to telegram"
 gh_repo=$(git config --get remote.origin.url | sed 's/\.git$//' | sed 's|^git@github.com:|https://github.com/|' | sed 's|^https://.*@github.com|https://github.com|')
