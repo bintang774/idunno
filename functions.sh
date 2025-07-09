@@ -47,13 +47,9 @@ create_release() {
     return $?
 }
 
-# magiskboot
-magiskboot() {
-    if ! [ -f "~/magiskboot" ]; then
-        local magiskboot_repo="https://api.github.com/repos/bintang774/magiskboot-releases/releases/latest"
-        local latest_magiskboot=$(curl -s "$magiskboot_repo" | grep "browser_download_url" | grep "magiskboot-x86_64" | cut -d '"' -f 4)
-        curl -s "$latest_magiskboot" -o ~/magiskboot
-        chmod 777 ~/magiskboot
-    fi
-    ~/magiskboot $@
+# setup magiskboot
+setup_magiskboot() {
+    mkdir -p ~/bin && export PATH="~/bin:$PATH"
+    curl -s "https://github.com/bintang774/magiskboot-releases/releases/download/magiskboot-X64/magiskboot" -o ~/bin/magiskboot
+    chmod 777 ~/bin/magiskboot
 }

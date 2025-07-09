@@ -22,13 +22,14 @@ rm -rf $tempdir
 if [ "$TARGET_IMAGE" == "boot" ]; then
     log "Extracting kernel string from boot.img"
     # extract kernel version
-    mkdir -p kernel && cd kernel
+    mkdir -p k && cd k
     cp $OLDPWD/boot.img .
+    setup_magiskboot
     magiskboot unpack boot.img || error "Failed to unpack boot.img"
     k_str=$(strings kernel | grep -E -m1 'Linux version.*#' 2>/dev/null)
     [ -z "$k_str" ] && error "Failed to extract kernel string"
     cd $OLDPWD
-    rm -rf kernel
+    rm -rf k
 fi
 
 log "Uploading $TARGET_IMAGE.img to GitHub Release"
