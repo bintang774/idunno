@@ -32,7 +32,13 @@ create_release() {
     [ -n "$tag_name" ] || error "Tag name must be set"
     [ -n "$release_name" ] || error "Release name must be set"
     [ -f "$file" ] || error "$file doesn't exist"
-    [ -f "$notes_file" ] && notes=1 || error "notes file doesn't exist"
+    if [ -n "$notes_file" ]; then
+        if [ -f "$notes_file" ]; then
+            notes=1
+        else
+            error "notes file doesn't exist"
+        fi
+    fi
 
     # setup args
     args=("$tag_name" "$file" --title "$release_name")
@@ -42,14 +48,15 @@ create_release() {
     export GH_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN}}"
 
     # oh yeahh
-    gh release create $args
+    gh release create "${args[@]}"
 
     return $?
 }
 
 # setup magiskboot
 setup_magiskboot() {
-    mkdir -p ~/bin && export PATH="~/bin:$PATH"
+    mkdir -p ~/bin
+    export PATH="~/bin:$PATH"
     curl -s "https://raw.githubusercontent.com/TheWildJames/Get_My_Kernel_Format/refs/heads/main/magiskboot" -o ~/bin/magiskboot
     chmod 777 ~/bin/magiskboot
 }

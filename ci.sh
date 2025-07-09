@@ -43,7 +43,7 @@ if [ "$TARGET_IMAGE" == "boot" ]; then
     release_args+=("$(pwd)/skibidi.md")
 fi
 
-create_release $release_args
+create_release "${release_args[@]}"
 
 log "Sending info message to telegram"
 gh_repo=$(git config --get remote.origin.url | sed 's/\.git$//' | sed 's|^git@github.com:|https://github.com/|' | sed 's|^https://.*@github.com|https://github.com|')
