@@ -25,9 +25,12 @@ if [ "$TARGET_IMAGE" == "boot" ]; then
     mkdir -p k && cd k
     cp $OLDPWD/boot.img .
     setup_magiskboot
-    magiskboot unpack boot.img || error "Failed to unpack boot.img"
+    magiskboot_output=$(magiskboot unpack boot.img 2>&1)
+    [ -z "$magiskboot_output" ] && error "Failed to unpack the boot.img"
+    k_fmt=$(echo "$magiskboot_output" | grep 'KERNEL_FMT' | tr -d '[]' | awk '{print $2}' 2>/dev/null)
     k_str=$(strings kernel | grep -E -m1 'Linux version.*#' 2>/dev/null)
     [ -z "$k_str" ] && error "Failed to extract kernel string"
+    [ -z "$k_fmt" ] && error "Failed to get kernel format"
     cd $OLDPWD
     rm -rf k
 fi
@@ -40,6 +43,7 @@ release_args=("$tag_name" "$release_name" "$(pwd)/$TARGET_IMAGE.img")
 
 if [ "$TARGET_IMAGE" == "boot" ]; then
     sed -i "s|k_str|$k_str|g" $(pwd)/skibidi.md
+    sed -i "s|k_fmt|$k_fmt|g" $(pwd)/skibidi.md
     release_args+=("$(pwd)/skibidi.md")
 fi
 
