@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -eo pipefail
 ARIA2C_OPT='-q -c -x16 -s32 -k8M --file-allocation=falloc --timeout=60 --retry-wait=5 -o firmware.tgz'
 tempdir=$(mktemp -d)
 source ./functions.sh
